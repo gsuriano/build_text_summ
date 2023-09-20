@@ -2,7 +2,7 @@ pipeline {
   agent any
   environment {
     PYTHONUNBUFFERED = 'TRUE'
-    SAGEMAKER_PROJECT_NAME_ID = """${sh(
+    SAGEMAKER_PROJECT_NAME_ID = """${bat(
       returnStdout: true,
       script: 'echo "${SAGEMAKER_PROJECT_NAME}-${SAGEMAKER_PROJECT_ID}"'
       ).trim()}"""
