@@ -16,7 +16,7 @@ pipeline {
     stage('Update and Run Sagemaker Pipeline') {
       steps {
         withAWS(credentials:"${AWS_CREDENTIAL}",region:"${AWS_REGION}") {
-          bat '''export PATH="$HOME/.local/$SAGEMAKER_PROJECT_NAME_ID/bin:$PATH"
+          bat '''set PATH="$HOME/.local/$SAGEMAKER_PROJECT_NAME_ID/bin:$PATH"
           set PYTHONPATH="$HOME/.local/$SAGEMAKER_PROJECT_NAME_ID:$PYTHONPATH"
           py run_pipeline.py --module-name pipelines.abalone.pipeline \
           --role-arn ${SAGEMAKER_PIPELINE_ROLE_ARN} \
