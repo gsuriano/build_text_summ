@@ -13,7 +13,19 @@
 """Provides utilities for SageMaker Pipeline CLI."""
 from __future__ import absolute_import
 
-import ast
+import json
+
+def convert_struct(json_str):
+    try:
+        # Parse the JSON string into a Python dictionary
+        kwargs_dict = json.loads(json_str)
+        
+        # Return the dictionary as keyword arguments
+        return kwargs_dict
+    except Exception as e:
+        # Handle any errors that might occur during parsing
+        print(f"Error converting JSON string to kwargs: {e}")
+        return {}
 
 
 def get_pipeline_driver(module_name, passed_args=None):
