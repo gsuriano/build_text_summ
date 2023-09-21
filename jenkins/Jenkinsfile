@@ -2,10 +2,10 @@ pipeline {
   agent any
   environment {
     PYTHONUNBUFFERED = 'TRUE'
-    SAGEMAKER_PROJECT_NAME_ID = """${bat(
+    SAGEMAKER_PROJECT_NAME_ID = """%{bat(
       returnStdout: true,
       script: 'echo "${SAGEMAKER_PROJECT_NAME}-${SAGEMAKER_PROJECT_ID}"'
-      ).trim()}"""
+      ).trim()}%"""
   }
   stages {
     stage('Build and Install') {
@@ -17,9 +17,9 @@ pipeline {
       steps {
         withAWS(credentials:"${AWS_CREDENTIAL}",region:"${AWS_REGION}") {
           bat '''python ./pipelines/run_pipeline.py --module-name abalone.pipeline \
-          --role-arn $SAGEMAKER_PIPELINE_ROLE_ARN$ \
-          --tags "[{\\"Key\\":\\"sagemaker:project-name\\", \\"Value\\":\\"$SAGEMAKER_PROJECT_NAME$\\"}, {\\"Key\\":\\"sagemaker:project-id\\", \\"Value\\":\\"$SAGEMAKER_PROJECT_ID$\\"}]" \
-          --kwargs "{\\"region\\":\\"$AWS_REGION$\\",\\"role\\":\\"$SAGEMAKER_PIPELINE_ROLE_ARN$\\",\\"default_bucket\\":\\"$ARTIFACT_BUCKET$\\",\\"pipeline_name\\":\\"$SAGEMAKER_PROJECT_NAME_ID$\\",\\"model_package_group_name\\":\\"$SAGEMAKER_PROJECT_NAME_ID$\\",\\"base_job_prefix\\":\\"$SAGEMAKER_PROJECT_NAME_ID$\\"}"'''
+          --role-arn %SAGEMAKER_PIPELINE_ROLE_ARN% \
+          --tags "[{\\"Key\\":\\"sagemaker:project-name\\", \\"Value\\":\\"%SAGEMAKER_PROJECT_NAME%\\"}, {\\"Key\\":\\"sagemaker:project-id\\", \\"Value\\":\\"%SAGEMAKER_PROJECT_ID%\\"}]" \
+          --kwargs "{\\"region\\":\\"%AWS_REGION%\\",\\"role\\":\\"%SAGEMAKER_PIPELINE_ROLE_ARN%\\",\\"default_bucket\\":\\"%ARTIFACT_BUCKET%\\",\\"pipeline_name\\":\\"%SAGEMAKER_PROJECT_NAME_ID%\\",\\"model_package_group_name\\":\\"%SAGEMAKER_PROJECT_NAME_ID%\\",\\"base_job_prefix\\":\\"%SAGEMAKER_PROJECT_NAME_ID%\\"}"'''
 
           echo "Create/Update of the SageMaker Pipeline and execution completed."
         }
