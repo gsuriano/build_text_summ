@@ -178,8 +178,12 @@ def get_pipeline(
     )
   
     # training step for generating model artifacts
-    model_path = f"s3://{sagemaker_session.default_bucket()}/{base_job_prefix}/model"
-      
+    model_path = f"s3://{sagemaker_session.default_bucket()}/model"
+
+    training_input_path  = f"s3://{sagemaker_session.default_bucket()}/data/train/train.csv"
+    validation_input_path  = f"s3://{sagemaker_session.default_bucket()}/data/validation/validation.csv"
+    test_input_path = f"s3://{sagemaker_session.default_bucket()}/data/test/test.csv"
+  
     hyperparameters={'epochs': 1,
                  'train_batch_size': 32,
                  'model_name':'distilbert-base-uncased'
@@ -197,10 +201,10 @@ def get_pipeline(
                             sagemaker_session=pipeline_session,
                             base_job_name=f"{base_job_prefix}/training",)
   
-    huggingface_estimator.fit({'train': training_input_path, 'test': test_input_path})
+    train_est.fit({'train': training_input_path, 'validation': validation_input_path})
     
     step_train = TrainingStep(
-        name="TrainAbaloneModel",
+        name="TrainModel",
         step_args=step_args,
     )
 
