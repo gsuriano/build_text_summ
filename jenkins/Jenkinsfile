@@ -4,7 +4,7 @@ pipeline {
     PYTHONUNBUFFERED = 'TRUE'
     SAGEMAKER_PROJECT_NAME_ID = """${bat(
       returnStdout: true,
-      script: 'echo "%SAGEMAKER_PROJECT_NAME%-%SAGEMAKER_PROJECT_ID%"'
+      script: 'echo "%SAGEMAKER_PROJECT_NAME%%SAGEMAKER_PROJECT_ID%"'
       ).trim()}"""
   }
   stages {
