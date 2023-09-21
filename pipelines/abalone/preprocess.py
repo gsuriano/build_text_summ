@@ -62,7 +62,10 @@ if __name__ == "__main__":
 
     logger.info("Writing out datasets to %s.", base_dir)
     pd.DataFrame(train).to_csv(f"{base_dir}/train/train.csv", header=False, index=False)
+    s3.Bucket(bucket).download_file("data/train/train.csv", f"{base_dir}/train/train.csv")
     pd.DataFrame(validation).to_csv(
         f"{base_dir}/validation/validation.csv", header=False, index=False
     )
+    s3.Bucket(bucket).download_file("data/validation/validation.csv", f"{base_dir}/validation/validation.csv")
     pd.DataFrame(test).to_csv(f"{base_dir}/test/test.csv", header=False, index=False)
+    s3.Bucket(bucket).download_file("data/test/test.csv", f"{base_dir}/test/test.csv")
