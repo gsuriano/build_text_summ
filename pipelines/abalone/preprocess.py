@@ -31,13 +31,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     base_dir = "/opt/ml/processing"
-    pathlib.Path(f"{base_dir}/data").mkdir(parents=True, exist_ok=True)
+    pathlib.Path(f"{base_dir}/input").mkdir(parents=True, exist_ok=True)
     input_data = args.input_data
     bucket = input_data.split("/")[2]
     key = "/".join(input_data.split("/")[3:])
 
     logger.info("Downloading data from bucket: %s, key: %s", bucket, key)
-    fn = f"{base_dir}/data/dataset.csv"
+    fn = f"{base_dir}/input/dataset.csv"
     s3 = boto3.resource("s3")
     s3.Bucket(bucket).download_file(key, fn)
 
