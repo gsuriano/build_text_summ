@@ -178,10 +178,10 @@ def get_pipeline(
             ProcessingOutput(output_name="test", source="/opt/ml/processing/test"),
         ],
         code=os.path.join(BASE_DIR, "preprocess.py"),
-        arguments=["--input-data", input_data],
-        # inputs=[
-        #   ProcessingInput(source=f"s3://{sagemaker_session.default_bucket()}/data/dataset.csv", destination="/opt/ml/processing/input"),
-        # ],
+        # arguments=["--input-data", input_data],
+        inputs=[
+          ProcessingInput(source=f"s3://{sagemaker_session.default_bucket()}/data/dataset.csv", destination="/opt/ml/processing/input"),
+        ],
     )
   
     step_process = ProcessingStep(
