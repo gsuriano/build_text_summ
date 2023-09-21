@@ -158,7 +158,7 @@ def get_pipeline(
   
     input_data = ParameterString(
         name="InputDataUrl",
-        default_value=f"s3://{sagemaker_session.default_bucket()}/dataset.csv",
+        default_value=f"s3://{sagemaker_session.default_bucket()}/data/dataset.csv",
     )
 
     # processing step for feature engineering
@@ -166,7 +166,7 @@ def get_pipeline(
         framework_version="0.23-1",
         instance_type=processing_instance_type,
         instance_count=processing_instance_count,
-        base_job_name=f"{base_job_prefix}/sklearn-abalone-preprocess",
+        base_job_name=f"{base_job_prefix}/sklearn-preprocess",
         sagemaker_session=pipeline_session,
         role=role,
     )
@@ -179,6 +179,9 @@ def get_pipeline(
         ],
         code=os.path.join(BASE_DIR, "preprocess.py"),
         arguments=["--input-data", input_data],
+        # inputs=[
+        #   ProcessingInput(source=f"s3://{sagemaker_session.default_bucket()}/data/dataset.csv", destination="/opt/ml/processing/input"),
+        # ],
     )
   
     step_process = ProcessingStep(
