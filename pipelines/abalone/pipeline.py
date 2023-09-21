@@ -171,7 +171,12 @@ def get_pipeline(
         role=role,
     )
 
+
+    print(f"DEBUG {sagemaker_session.default_bucket()}")
     step_args = sklearn_processor.run(
+        inputs=[
+          ProcessingInput(source=f"s3://{sagemaker_session.default_bucket()}/data/dataset.csv", destination="/opt/ml/processing/input"),
+        ],
         outputs=[
             ProcessingOutput(output_name="train", source="/opt/ml/processing/train"),
             ProcessingOutput(output_name="validation", source="/opt/ml/processing/validation"),
@@ -179,9 +184,7 @@ def get_pipeline(
         ],
         code=os.path.join(BASE_DIR, "preprocess.py"),
         # arguments=["--input-data", input_data],
-        inputs=[
-          ProcessingInput(source=f"s3://{sagemaker_session.default_bucket()}/data/dataset.csv", destination="/opt/ml/processing/input"),
-        ],
+        
     )
   
     step_process = ProcessingStep(
