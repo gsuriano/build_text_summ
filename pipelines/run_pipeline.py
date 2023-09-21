@@ -18,7 +18,7 @@ import json
 import sys
 import traceback
 
-from pipelines._utils import get_pipeline_driver, convert_struct, get_pipeline_custom_tags
+from _utils import get_pipeline_driver, convert_struct, get_pipeline_custom_tags
 
 
 def main():  # pragma: no cover
