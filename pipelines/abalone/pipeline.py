@@ -47,6 +47,7 @@ from sagemaker.workflow.model_step import ModelStep
 from sagemaker.model import Model
 from sagemaker.workflow.pipeline_context import PipelineSession
 
+from sagemaker.huggingface import HuggingFace
 
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -154,20 +155,13 @@ def get_pipeline(
     model_approval_status = ParameterString(
         name="ModelApprovalStatus", default_value="PendingManualApproval"
     )
+  
     input_data = ParameterString(
         name="InputDataUrl",
-        default_value=f"s3://sagemaker-servicecatalog-seedcode-{region}/dataset/abalone-dataset.csv",
+        default_value=f"s3://{sagemaker_session.default_bucket()}/dataset.csv",
     )
 
     # processing step for feature engineering
-    sklearn_processor = SKLearnProcessor(
-        framework_version="0.23-1",
-        instance_type=processing_instance_type,
-        instance_count=processing_instance_count,
-        base_job_name=f"{base_job_prefix}/sklearn-abalone-preprocess",
-        sagemaker_session=pipeline_session,
-        role=role,
-    )
     step_args = sklearn_processor.run(
         outputs=[
             ProcessingOutput(output_name="train", source="/opt/ml/processing/train"),
@@ -177,55 +171,34 @@ def get_pipeline(
         code=os.path.join(BASE_DIR, "preprocess.py"),
         arguments=["--input-data", input_data],
     )
+  
     step_process = ProcessingStep(
-        name="PreprocessAbaloneData",
+        name="PreprocessData",
         step_args=step_args,
     )
-
+  
     # training step for generating model artifacts
-    model_path = f"s3://{sagemaker_session.default_bucket()}/{base_job_prefix}/AbaloneTrain"
-    image_uri = sagemaker.image_uris.retrieve(
-        framework="xgboost",
-        region=region,
-        version="1.0-1",
-        py_version="py3",
-        instance_type=training_instance_type,
-    )
-    xgb_train = Estimator(
-        image_uri=image_uri,
-        instance_type=training_instance_type,
-        instance_count=1,
-        output_path=model_path,
-        base_job_name=f"{base_job_prefix}/abalone-train",
-        sagemaker_session=pipeline_session,
-        role=role,
-    )
-    xgb_train.set_hyperparameters(
-        objective="reg:linear",
-        num_round=50,
-        max_depth=5,
-        eta=0.2,
-        gamma=4,
-        min_child_weight=6,
-        subsample=0.7,
-        silent=0,
-    )
-    step_args = xgb_train.fit(
-        inputs={
-            "train": TrainingInput(
-                s3_data=step_process.properties.ProcessingOutputConfig.Outputs[
-                    "train"
-                ].S3Output.S3Uri,
-                content_type="text/csv",
-            ),
-            "validation": TrainingInput(
-                s3_data=step_process.properties.ProcessingOutputConfig.Outputs[
-                    "validation"
-                ].S3Output.S3Uri,
-                content_type="text/csv",
-            ),
-        },
-    )
+    model_path = f"s3://{sagemaker_session.default_bucket()}/{base_job_prefix}/model"
+      
+    hyperparameters={'epochs': 1,
+                 'train_batch_size': 32,
+                 'model_name':'distilbert-base-uncased'
+                 }
+  
+    train_est = HuggingFace(entry_point='train.py',
+                            instance_type=training_instance_type,
+                            instance_count=1,
+                            role=role,
+                            transformers_version='4.26',
+                            pytorch_version='1.13',
+                            py_version='py39',
+                            hyperparameters = hyperparameters,
+                            output_path=model_path,
+                            sagemaker_session=pipeline_session,
+                            base_job_name=f"{base_job_prefix}/training",)
+  
+    huggingface_estimator.fit({'train': training_input_path, 'test': test_input_path})
+    
     step_train = TrainingStep(
         name="TrainAbaloneModel",
         step_args=step_args,
