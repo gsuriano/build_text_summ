@@ -162,6 +162,15 @@ def get_pipeline(
     )
 
     # processing step for feature engineering
+    sklearn_processor = SKLearnProcessor(
+        framework_version="0.23-1",
+        instance_type=processing_instance_type,
+        instance_count=processing_instance_count,
+        base_job_name=f"{base_job_prefix}/sklearn-abalone-preprocess",
+        sagemaker_session=pipeline_session,
+        role=role,
+    )
+
     step_args = sklearn_processor.run(
         outputs=[
             ProcessingOutput(output_name="train", source="/opt/ml/processing/train"),
