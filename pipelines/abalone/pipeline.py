@@ -172,7 +172,7 @@ def get_pipeline(
     )
 
 
-    print(f"DEBUG {sagemaker_session.default_bucket()}")
+    print(f"DEBUG s3://{sagemaker_session.default_bucket()}/data/dataset.csv")
     step_args = sklearn_processor.run(
         inputs=[
           ProcessingInput(source=f"s3://{sagemaker_session.default_bucket()}/data/dataset.csv", destination="/opt/ml/processing/input"),
