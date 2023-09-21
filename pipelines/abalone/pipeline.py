@@ -180,7 +180,7 @@ def get_pipeline(
         outputs=[
             ProcessingOutput(destination=f"s3://{sagemaker_session.default_bucket()}/data/train.csv", source="/opt/ml/processing/train"),
             ProcessingOutput(destination=f"s3://{sagemaker_session.default_bucket()}/data/validation.csv", source="/opt/ml/processing/validation"),
-            ProcessingOutput(destiantion=f"s3://{sagemaker_session.default_bucket()}/data/test.csv", source="/opt/ml/processing/test"),
+            ProcessingOutput(destination=f"s3://{sagemaker_session.default_bucket()}/data/test.csv", source="/opt/ml/processing/test"),
         ],
         code=os.path.join(BASE_DIR, "preprocess.py"),
         # arguments=["--input-data", input_data],
