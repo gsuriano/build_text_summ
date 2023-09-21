@@ -1,7 +1,5 @@
 pipeline {
-  agent {
-        label 'python'
-    }
+  agent any
   environment {
     PYTHONUNBUFFERED = 'TRUE'
     SAGEMAKER_PROJECT_NAME_ID = """${bat(
