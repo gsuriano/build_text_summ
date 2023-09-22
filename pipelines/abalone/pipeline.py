@@ -172,23 +172,19 @@ def get_pipeline(
     )
 
 
-    print(f"DEBUG s3://{sagemaker_session.default_bucket()}/data/dataset.csv")
-    step_args = sklearn_processor.run(
-        inputs=[
-          ProcessingInput(source=f"s3://{sagemaker_session.default_bucket()}/data/dataset.csv", destination="/opt/ml/processing/input"),
-        ],
-        outputs=[
+    processing_inputs=[
+      ProcessingInput(source=f"s3://{sagemaker_session.default_bucket()}/data/dataset.csv", destination="/opt/ml/processing/input"),
+    ]
+    processing_outputs=[
             ProcessingOutput(destination=f"s3://{sagemaker_session.default_bucket()}/data/train.csv", source="/opt/ml/processing/train"),
             ProcessingOutput(destination=f"s3://{sagemaker_session.default_bucket()}/data/validation.csv", source="/opt/ml/processing/validation"),
             ProcessingOutput(destination=f"s3://{sagemaker_session.default_bucket()}/data/test.csv", source="/opt/ml/processing/test"),
-        ],
-        code=os.path.join(BASE_DIR, "preprocess.py"),
-        # arguments=["--input-data", input_data],
-        
-    )
+    ]
   
     step_process = ProcessingStep(
         name="PreprocessData",
+        code=os.path.join(BASE_DIR, "preprocess.py"),
+        processor = sklearn_processor
         step_args=step_args,
     )
   
@@ -203,6 +199,10 @@ def get_pipeline(
                  'train_batch_size': 32,
                  'model_name':'distilbert-base-uncased'
                  }
+
+    metrics_definitions = [
+      {'Name' : ''}
+    ]
   
     train_est = HuggingFace(entry_point='train.py',
                             instance_type=training_instance_type,
@@ -214,14 +214,28 @@ def get_pipeline(
                             hyperparameters = hyperparameters,
                             output_path=model_path,
                             sagemaker_session=pipeline_session,
-                            base_job_name=f"{base_job_prefix}/training",)
+                            base_job_name=f"{base_job_prefix}/training",
+                            metric_deinitions = metrics_efinitions )
   
-    train_est.fit({'train': training_input_path, 'validation': validation_input_path})
-    
-    step_train = TrainingStep(
-        name="TrainModel",
-        step_args=step_args,
-    )
+    training_step = TrainingStep(
+      name="Train",
+      estimator=train_est,
+      inputs={
+          "train": TrainingInput(
+              s3_data=step_process.properties.ProcessingOutputConfig.Outputs["train"].S3Output.S3Uri,
+              content_type="text/csv",
+          ),
+          "validation": TrainingInput(
+              s3_data=step_process.properties.ProcessingOutputConfig.Outputs["validation"].S3Output.S3Uri,
+              content_type="text/csv",
+          ),
+          "test": TrainingInput(
+              s3_data=step_process.properties.ProcessingOutputConfig.Outputs["test"].S3Output.S3Uri,
+              content_type="text/csv",
+          ),
+    }
+)
+
 
     # processing step for evaluation
     script_eval = ScriptProcessor(
