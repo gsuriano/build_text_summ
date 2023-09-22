@@ -68,17 +68,17 @@ def main():  # pragma: no cover
 
     try:
         pipeline = get_pipeline_driver(args.module_name, args.kwargs)
-        print("###### Creating/updating a SageMaker Pipeline with the following definition:")
-        parsed = json.loads(pipeline.definition())
-        print(json.dumps(parsed, indent=2, sort_keys=True))
+        # print("###### Creating/updating a SageMaker Pipeline with the following definition:")
+        # parsed = json.loads(pipeline.definition())
+        # print(json.dumps(parsed, indent=2, sort_keys=True))
 
-        all_tags = get_pipeline_custom_tags(args.module_name, args.kwargs, tags)
+        # all_tags = get_pipeline_custom_tags(args.module_name, args.kwargs, tags)
 
-        upsert_response = pipeline.upsert(
-            role_arn=args.role_arn, description=args.description, tags=all_tags
-        )
-        print("\n###### Created/Updated SageMaker Pipeline: Response received:")
-        print(upsert_response)
+        # upsert_response = pipeline.upsert(
+        #     role_arn=args.role_arn, description=args.description, tags=all_tags
+        # )
+        # print("\n###### Created/Updated SageMaker Pipeline: Response received:")
+        # print(upsert_response)
 
         execution = pipeline.start()
         print(f"\n###### Execution started with PipelineExecutionArn: {execution.arn}")
