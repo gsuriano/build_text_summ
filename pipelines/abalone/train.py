@@ -1,6 +1,8 @@
 from transformers import AutoModelForSequenceClassification, Trainer, TrainingArguments, AutoTokenizer
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
-from datasets import load_from_disk
+from Thext.SentenceRankerPlus import *
+from Thext import RedundancyManager
+from Thext import Highlighter
 import random
 import logging
 import sys
@@ -29,67 +31,38 @@ if __name__ == "__main__":
 
     args, _ = parser.parse_known_args()
 
-    # Set up logging
+    feature_columns_names = ["sentence","abstract"]
+    rouge_label = 'r2f'
+    
     logger = logging.getLogger(__name__)
-
-    logging.basicConfig(
-        level=logging.getLevelName("INFO"),
-        handlers=[logging.StreamHandler(sys.stdout)],
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    base_dir = "/opt/ml/processing"
+    fn_train = f"{base_dir}/train/train.csv"
+    fn_val = f"{base_dir}/validation/validation.csv"
+    
+    logger.debug("Reading downloaded data.")
+    train = pd.read_csv(
+        fn_train,
+        header=None,
+        names=feature_columns_names + [rouge_label],
     )
 
-    # load datasets
-    train_dataset = load_from_disk(args.training_dir)
-    test_dataset = load_from_disk(args.test_dir)
-
-    logger.info(f" loaded train_dataset length is: {len(train_dataset)}")
-    logger.info(f" loaded test_dataset length is: {len(test_dataset)}")
-
-    # compute metrics function for binary classification
-    def compute_metrics(pred):
-        labels = pred.label_ids
-        preds = pred.predictions.argmax(-1)
-        precision, recall, f1, _ = precision_recall_fscore_support(labels, preds, average="binary")
-        acc = accuracy_score(labels, preds)
-        return {"accuracy": acc, "f1": f1, "precision": precision, "recall": recall}
-
-    # download model from model hub
-    model = AutoModelForSequenceClassification.from_pretrained(args.model_name)
-    tokenizer = AutoTokenizer.from_pretrained(args.model_name)
-
-    # define training args
-    training_args = TrainingArguments(
-        output_dir=args.model_dir,
-        num_train_epochs=args.epochs,
-        per_device_train_batch_size=args.train_batch_size,
-        per_device_eval_batch_size=args.eval_batch_size,
-        warmup_steps=args.warmup_steps,
-        evaluation_strategy="epoch",
-        logging_dir=f"{args.output_data_dir}/logs",
-        learning_rate=float(args.learning_rate),
+    val = pd.read_csv(
+        fn_val,
+        header=None,
+        names=feature_columns_names + [rouge_label],
     )
+    
+    base_model_name = "morenolq/thext-cs-scibert"
+    model_name_or_path = "morenolq/thext-cs-scibert"
+    sr = SentenceRankerPlus(base_model_name=base_model_name, model_name_or_path=model_name_or_path)
 
-    # create Trainer instance
-    trainer = Trainer(
-        model=model,
-        args=training_args,
-        compute_metrics=compute_metrics,
-        train_dataset=train_dataset,
-        eval_dataset=test_dataset,
-        tokenizer=tokenizer,
-    )
-
-    # train model
-    trainer.train()
-
-    # evaluate model
-    eval_result = trainer.evaluate(eval_dataset=test_dataset)
-
-    # writes eval result to file which can be accessed later in s3 ouput
-    with open(os.path.join(args.output_data_dir, "eval_results.txt"), "w") as writer:
-        print(f"***** Eval results *****")
-        for key, value in sorted(eval_result.items()):
-            writer.write(f"{key} = {value}\n")
-
-    # Saves the model to s3
-    trainer.save_model(args.model_dir)
+    sr.set_text(train['sentence'].values,True)
+    sr.set_text(val['sentence'].values,False)
+    sr.set_abstract(train['abstract'].values,True)
+    sr.set_abstract(val['abstract'].values,False)
+    sr.set_labels(train[rouge_label].values,True)
+    sr.set_labels(val[rouge_label].values,False)
+    
+    sr.prepare_for_training()
+    
+    sr.fit(args.model_dir)
