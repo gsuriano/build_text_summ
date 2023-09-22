@@ -51,14 +51,7 @@ def main():  # pragma: no cover
         type=str,
         help="The role arn for the pipeline service execution role.",
     )
-    parser.add_argument(
-        "-description",
-        "--description",
-        dest="description",
-        type=str,
-        default=None,
-        help="The description of the pipeline.",
-    )
+    
     parser.add_argument(
         "-tags",
         "--tags",
