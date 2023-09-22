@@ -43,6 +43,7 @@ from sagemaker.workflow.steps import (
     ProcessingStep,
     TrainingStep,
 )
+from sagemaker.workflow.step_collections import RegisterModel
 from sagemaker.workflow.model_step import ModelStep
 from sagemaker.model import Model
 from sagemaker.workflow.pipeline_context import PipelineSession
@@ -234,41 +235,40 @@ def get_pipeline(
 
 
     # processing step for evaluation
-    script_eval = ScriptProcessor(
-        image_uri=image_uri,
-        command=["python3"],
-        instance_type=processing_instance_type,
-        instance_count=1,
-        base_job_name=f"{base_job_prefix}/script-abalone-eval",
-        sagemaker_session=pipeline_session,
+    evaluation_processor = SKLearnProcessor(
+        framework_version="0.23-1",
         role=role,
+        instance_type=processing_instance_type,
+        instance_count=processing_instance_count,
+        env={"AWS_DEFAULT_REGION": region},
+        max_runtime_in_seconds=7200,
     )
-    step_args = script_eval.run(
+  
+    evaluation_report = PropertyFile(
+        name="EvaluationReport",
+        output_name="metrics",
+        path="evaluation.json",
+    )
+    
+    evaluation_step = ProcessingStep(
+        name="EvaluateModel",
+        processor=evaluation_processor,
+        code="evaluate.py",
         inputs=[
             ProcessingInput(
-                source=step_train.properties.ModelArtifacts.S3ModelArtifacts,
-                destination="/opt/ml/processing/model",
+                source=training_step.properties.ModelArtifacts.S3ModelArtifacts,
+                destination="/opt/ml/processing/input/model",
             ),
             ProcessingInput(
-                source=step_process.properties.ProcessingOutputConfig.Outputs[
-                    "test"
-                ].S3Output.S3Uri,
-                destination="/opt/ml/processing/test",
+                source=processing_step.properties.ProcessingInputs["raw-input-data"].S3Input.S3Uri,
+                destination="/opt/ml/processing/input/data",
             ),
         ],
         outputs=[
-            ProcessingOutput(output_name="evaluation", source="/opt/ml/processing/evaluation"),
+            ProcessingOutput(
+                output_name="metrics", s3_upload_mode="EndOfJob", source="/opt/ml/processing/output/metrics/"
+            ),
         ],
-        code=os.path.join(BASE_DIR, "evaluate.py"),
-    )
-    evaluation_report = PropertyFile(
-        name="AbaloneEvaluationReport",
-        output_name="evaluation",
-        path="evaluation.json",
-    )
-    step_eval = ProcessingStep(
-        name="EvaluateAbaloneModel",
-        step_args=step_args,
         property_files=[evaluation_report],
     )
 
@@ -281,26 +281,27 @@ def get_pipeline(
             content_type="application/json"
         )
     )
-    model = Model(
-        image_uri=image_uri,
-        model_data=step_train.properties.ModelArtifacts.S3ModelArtifacts,
-        sagemaker_session=pipeline_session,
-        role=role,
-    )
-    step_args = model.register(
-        content_types=["text/csv"],
-        response_types=["text/csv"],
-        inference_instances=["ml.t2.medium", "ml.m5.large"],
-        transform_instances=["ml.m5.large"],
-        model_package_group_name=model_package_group_name,
+
+    #inference_image_uri = "763104351884.dkr.ecr.us-east-1.amazonaws.com/huggingface-pytorch-inference:1.13.1-transformers4.26.0-cpu-py39-ubuntu20.04"
+
+    model_approval_status = ParameterString(name="ModelApprovalStatus", default_value="PendingManualApproval")
+    
+    register_step = RegisterModel(
+        name="RegisterModel",
+        #    entry_point='inference.py', # Adds a Repack Step:  https://github.com/aws/sagemaker-python-sdk/blob/01c6ee3a9ec1831e935e86df58cf70bc92ed1bbe/src/sagemaker/workflow/_utils.py#L44
+        #    source_dir='src',
+        estimator=train_est,
+        #image_uri=inference_image_uri,  # we have to specify, by default it's using training image
+        model_data=training_step.properties.ModelArtifacts.S3ModelArtifacts,
+        content_types=["application/jsonlines"],
+        response_types=["application/jsonlines"],
+        inference_instances=[processing_instance_type],
+        transform_instances=["ml.m4.xlarge"],
         approval_status=model_approval_status,
         model_metrics=model_metrics,
     )
-    step_register = ModelStep(
-        name="RegisterAbaloneModel",
-        step_args=step_args,
-    )
-
+    
+    
     # condition step for evaluating model quality and branching execution
     cond_lte = ConditionLessThanOrEqualTo(
         left=JsonGet(
