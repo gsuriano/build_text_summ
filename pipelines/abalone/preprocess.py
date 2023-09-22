@@ -14,6 +14,7 @@ from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.model_selection import train_test_split
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -45,23 +46,15 @@ if __name__ == "__main__":
     )
     os.unlink(fn)
 
-    logger.info("Applying transforms.")
-    y = df.pop(label_column)
-    X_pre = df.to_numpy()
-    y_pre = y.to_numpy().reshape(len(y), 1)
-
-    X = np.concatenate((y_pre, X_pre), axis=1)
-
-    logger.info("Splitting %d rows of data into train, validation, test datasets.", len(X))
-    np.random.shuffle(X)
-    train, validation, test = np.split(X, [int(0.7 * len(X)), int(0.85 * len(X))])
-
+    train, split = train_test_split(df, test_size=0.30, random_state=42)
+    validation, test = train_test_split(split, test_size=0.5, random_state=42)
+    
     logger.info("Writing out datasets to %s.", base_dir)
-    pd.DataFrame(train).to_csv(f"{base_dir}/train/train.csv", header=False, index=False)
+    train.to_csv(f"{base_dir}/train/train.csv", index=False)
     #s3.Bucket(bucket).download_file("data/train/train.csv", f"{base_dir}/train/train.csv")
-    pd.DataFrame(validation).to_csv(
-        f"{base_dir}/validation/validation.csv", header=False, index=False
+    validation.to_csv(
+        f"{base_dir}/validation/validation.csv", index=False
     )
     #s3.Bucket(bucket).download_file("data/validation/validation.csv", f"{base_dir}/validation/validation.csv")
-    pd.DataFrame(test).to_csv(f"{base_dir}/test/test.csv", header=False, index=False)
+    test.to_csv(f"{base_dir}/test/test.csv", index=False)
     #s3.Bucket(bucket).download_file("data/test/test.csv", f"{base_dir}/test/test.csv")
