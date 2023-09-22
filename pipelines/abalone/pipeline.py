@@ -51,6 +51,8 @@ from sagemaker.model import Model
 from sagemaker.workflow.pipeline_context import PipelineSession
 
 from sagemaker.huggingface import HuggingFace
+import time
+
 
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -293,7 +295,8 @@ def get_pipeline(
         model_metrics=model_metrics,
     )
     
-    
+    timestamp = int(time.time())
+  
     model_name = "bert-model-{}".format(timestamp)
     
     model = Model(
