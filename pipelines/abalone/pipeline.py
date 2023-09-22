@@ -260,8 +260,8 @@ def get_pipeline(
                 destination="/opt/ml/processing/input/model",
             ),
             ProcessingInput(
-                source=processing_step.properties.ProcessingInputs["raw-input-data"].S3Input.S3Uri,
-                destination="/opt/ml/processing/input/data",
+                source=step_process.properties.ProcessingOutputConfig.Outputs["test"].S3Output.S3Uri,
+                destination="/opt/ml/evaluation/data",
             ),
         ],
         outputs=[
@@ -302,6 +302,7 @@ def get_pipeline(
     )
     
     
+  
     # condition step for evaluating model quality and branching execution
     cond_lte = ConditionLessThanOrEqualTo(
         left=JsonGet(
