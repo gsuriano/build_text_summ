@@ -50,7 +50,7 @@ if __name__ == "__main__":
         },
     }
 
-    output_dir = "/opt/ml/processing/evaluation"
+    output_dir = "/opt/ml/processing/output/metrics"
     pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
 
     logger.info("Writing out evaluation report with mse: %f", mse)
