@@ -269,7 +269,7 @@ def get_pipeline(
     # register model step that will be conditionally executed
     model_metrics = ModelMetrics(
         model_statistics=MetricsSource(
-            s3_uri=f"{evaluation_step.properties.ProcessingOutputConfig.Outputs["metrics"].S3Output.S3Uri}/evaluation.json",
+            s3_uri=f'{evaluation_step.properties.ProcessingOutputConfig.Outputs["metrics"].S3Output.S3Uri}/evaluation.json',
             content_type="application/json"
         )
     )
