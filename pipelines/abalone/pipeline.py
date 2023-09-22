@@ -195,13 +195,7 @@ def get_pipeline(
     validation_input_path  = f"s3://{sagemaker_session.default_bucket()}/data/validation/validation.csv"
     test_input_path = f"s3://{sagemaker_session.default_bucket()}/data/test/test.csv"
   
-    hyperparameters={'epochs': 1,
-                 'train_batch_size': 32,
-                 'model_name':'distilbert-base-uncased'
-                 }
-
-    #metrics_definitions = [{'Name' : ''}]
-  
+      
     train_est = HuggingFace(entry_point='train.py',
                             instance_type=training_instance_type,
                             instance_count=1,
@@ -209,11 +203,9 @@ def get_pipeline(
                             transformers_version='4.26',
                             pytorch_version='1.13',
                             py_version='py39',
-                            hyperparameters = hyperparameters,
                             output_path=model_path,
                             sagemaker_session=pipeline_session,
-                            base_job_name=f"{base_job_prefix}/training",
-     #                       metric_deinitions = metrics_efinitions 
+                            base_job_name=f"{base_job_prefix}/training", 
                            )
   
     training_step = TrainingStep(
