@@ -197,9 +197,7 @@ def get_pipeline(
                  'model_name':'distilbert-base-uncased'
                  }
 
-    metrics_definitions = [
-      {'Name' : ''}
-    ]
+    #metrics_definitions = [{'Name' : ''}]
   
     train_est = HuggingFace(entry_point='train.py',
                             instance_type=training_instance_type,
@@ -212,7 +210,8 @@ def get_pipeline(
                             output_path=model_path,
                             sagemaker_session=pipeline_session,
                             base_job_name=f"{base_job_prefix}/training",
-                            metric_deinitions = metrics_efinitions )
+     #                       metric_deinitions = metrics_efinitions 
+                           )
   
     training_step = TrainingStep(
       name="Train",
