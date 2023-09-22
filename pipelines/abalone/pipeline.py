@@ -184,8 +184,9 @@ def get_pipeline(
     step_process = ProcessingStep(
         name="PreprocessData",
         code=os.path.join(BASE_DIR, "preprocess.py"),
-        processor = sklearn_processor
-        step_args=step_args,
+        processor = sklearn_processor,
+        inputs=processing_inputs,
+        outputs=processing_outputs,
     )
   
     # training step for generating model artifacts
