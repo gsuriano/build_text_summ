@@ -331,7 +331,7 @@ def get_pipeline(
     step_cond = ConditionStep(
         name="CheckMSEAbaloneEvaluation",
         conditions=[cond_lte],
-        if_steps=[step_register,create_step],
+        if_steps=[register_step,create_step],
         else_steps=[],
     )
 
