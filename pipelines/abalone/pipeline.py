@@ -16,6 +16,7 @@ import sagemaker.session
 
 from sagemaker.estimator import Estimator
 from sagemaker.inputs import TrainingInput
+from sagemaker.inputs import CreateModelInput
 from sagemaker.model_metrics import (
     MetricsSource,
     ModelMetrics,
@@ -42,6 +43,7 @@ from sagemaker.workflow.properties import PropertyFile
 from sagemaker.workflow.steps import (
     ProcessingStep,
     TrainingStep,
+    CreateModelStep
 )
 from sagemaker.workflow.step_collections import RegisterModel
 from sagemaker.workflow.model_step import ModelStep
@@ -261,7 +263,7 @@ def get_pipeline(
             ),
             ProcessingInput(
                 source=step_process.properties.ProcessingOutputConfig.Outputs["test"].S3Output.S3Uri,
-                destination="/opt/ml/evaluation/data",
+                destination="/opt/ml/data/test",
             ),
         ],
         outputs=[
@@ -282,7 +284,7 @@ def get_pipeline(
         )
     )
 
-    #inference_image_uri = "763104351884.dkr.ecr.us-east-1.amazonaws.com/huggingface-pytorch-inference:1.13.1-transformers4.26.0-cpu-py39-ubuntu20.04"
+    inference_image_uri = "763104351884.dkr.ecr.us-east-1.amazonaws.com/huggingface-pytorch-inference:1.13.1-transformers4.26.0-cpu-py39-ubuntu20.04"
 
     model_approval_status = ParameterString(name="ModelApprovalStatus", default_value="PendingManualApproval")
     
@@ -291,7 +293,7 @@ def get_pipeline(
         #    entry_point='inference.py', # Adds a Repack Step:  https://github.com/aws/sagemaker-python-sdk/blob/01c6ee3a9ec1831e935e86df58cf70bc92ed1bbe/src/sagemaker/workflow/_utils.py#L44
         #    source_dir='src',
         estimator=train_est,
-        #image_uri=inference_image_uri,  # we have to specify, by default it's using training image
+        image_uri=inference_image_uri,  # we have to specify, by default it's using training image
         model_data=training_step.properties.ModelArtifacts.S3ModelArtifacts,
         content_types=["application/jsonlines"],
         response_types=["application/jsonlines"],
@@ -301,6 +303,27 @@ def get_pipeline(
         model_metrics=model_metrics,
     )
     
+    
+    model_name = "bert-model-{}".format(timestamp)
+    
+    model = Model(
+        name=model_name,
+        image_uri=inference_image_uri,
+        model_data=training_step.properties.ModelArtifacts.S3ModelArtifacts,
+        sagemaker_session=sess,
+        role=role,
+    )
+
+    create_inputs = CreateModelInput(
+        instance_type=processing_instance_type,
+    )
+
+    create_step = CreateModelStep(
+        name="CreateModel",
+        model=model,
+        inputs=create_inputs,
+    )
+
     
   
     # condition step for evaluating model quality and branching execution
@@ -315,7 +338,7 @@ def get_pipeline(
     step_cond = ConditionStep(
         name="CheckMSEAbaloneEvaluation",
         conditions=[cond_lte],
-        if_steps=[step_register],
+        if_steps=[step_register,create_step],
         else_steps=[],
     )
 
@@ -329,7 +352,7 @@ def get_pipeline(
             model_approval_status,
             input_data,
         ],
-        steps=[step_process, step_train, step_eval, step_cond],
+        steps=[step_process, training_step, evaluation_step, step_cond],
         sagemaker_session=pipeline_session,
     )
     return pipeline
