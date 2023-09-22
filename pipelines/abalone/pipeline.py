@@ -196,7 +196,7 @@ def get_pipeline(
     test_input_path = f"s3://{sagemaker_session.default_bucket()}/data/test/test.csv"
   
       
-    train_est = HuggingFace(entry_point='train.py',
+    train_est = HuggingFace(entry_point=os.path.join(BASE_DIR, "train.py"),
                             instance_type=training_instance_type,
                             instance_count=1,
                             role=role,
@@ -247,7 +247,7 @@ def get_pipeline(
     evaluation_step = ProcessingStep(
         name="EvaluateModel",
         processor=evaluation_processor,
-        code="evaluate.py",
+        code=os.path.join(BASE_DIR, "evaluate.py"),
         inputs=[
             ProcessingInput(
                 source=training_step.properties.ModelArtifacts.S3ModelArtifacts,
