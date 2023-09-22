@@ -270,7 +270,7 @@ def get_pipeline(
     model_metrics = ModelMetrics(
         model_statistics=MetricsSource(
             s3_uri="{}/evaluation.json".format(
-                step_eval.arguments["ProcessingOutputConfig"]["Outputs"][0]["S3Output"]["S3Uri"]
+                evaluation_step.arguments["ProcessingOutputConfig"]["Outputs"][0]["S3Output"]["S3Uri"]
             ),
             content_type="application/json"
         )
@@ -321,7 +321,7 @@ def get_pipeline(
     # condition step for evaluating model quality and branching execution
     cond_lte = ConditionLessThanOrEqualTo(
         left=JsonGet(
-            step_name=step_eval.name,
+            step_name=evaluation_step.name,
             property_file=evaluation_report,
             json_path="regression_metrics.mse.value"
         ),
