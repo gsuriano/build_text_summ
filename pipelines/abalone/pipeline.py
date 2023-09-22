@@ -303,7 +303,7 @@ def get_pipeline(
         name=model_name,
         image_uri=inference_image_uri,
         model_data=training_step.properties.ModelArtifacts.S3ModelArtifacts,
-        sagemaker_session=sess,
+        sagemaker_session=sagemaker_session ,
         role=role,
     )
 
