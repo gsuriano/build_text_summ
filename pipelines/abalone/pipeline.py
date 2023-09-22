@@ -347,6 +347,4 @@ def get_pipeline(
         steps=[step_process, training_step, evaluation_step, step_cond],
         sagemaker_session=pipeline_session,
     )
-
-    print(f"DEBUG {pipeline.definition()}")
     return pipeline
