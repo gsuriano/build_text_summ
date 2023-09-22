@@ -343,7 +343,6 @@ def get_pipeline(
             processing_instance_count,
             training_instance_type,
             model_approval_status,
-            input_data,
         ],
         steps=[step_process, training_step, evaluation_step, step_cond],
         sagemaker_session=pipeline_session,
