@@ -156,10 +156,6 @@ def get_pipeline(
         name="ModelApprovalStatus", default_value="PendingManualApproval"
     )
   
-    input_data = ParameterString(
-        name="InputDataUrl",
-        default_value=f"s3://{sagemaker_session.default_bucket()}/data/dataset.csv",
-    )
 
     # processing step for feature engineering
     sklearn_processor = SKLearnProcessor(
