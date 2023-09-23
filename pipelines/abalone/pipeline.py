@@ -251,13 +251,13 @@ def get_pipeline(
 
     EVALUATION_SCRIPT_LOCATION = os.path.join(BASE_DIR, "evaluate.py")
 
-    processing_code = sagemaker_session.upload_data(
+    evaluation_code = sagemaker_session.upload_data(
         EVALUATION_SCRIPT_LOCATION,
         bucket=sagemaker_session.default_bucket(),
-        key_prefix="code/evaluating",
+        key_prefix="/opt/ml/code/evaluating",
     )
   
-    # processing step for evaluation
+    # Processing step for evaluation
     evaluation_processor = SKLearnProcessor(
         framework_version="0.23-1",
         role=role,
@@ -277,6 +277,11 @@ def get_pipeline(
         ProcessingInput(
             source=training_step.properties.ModelArtifacts.S3ModelArtifacts,
             destination="/opt/ml/processing/input/model",
+        ),
+        ProcessingInput(
+            source=evaluation_code,
+            destination="/opt/ml/code/evaluating",
+            input_name="code",
         ),
         ProcessingInput(
             source=f"s3://{sagemaker_session.default_bucket()}/data/test.csv",
