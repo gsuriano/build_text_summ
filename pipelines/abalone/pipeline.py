@@ -149,6 +149,8 @@ def get_pipeline(
     Returns:
         an instance of a pipeline
     """
+
+    print(f"DEBUG {BASE_DIR}")
     sagemaker_session = get_session(region, default_bucket)
     if role is None:
         role = sagemaker.session.get_execution_role(sagemaker_session)
@@ -190,7 +192,7 @@ def get_pipeline(
   
     step_process = ProcessingStep(
         name="PreprocessData",
-        code=os.path.join(BASE_DIR, "preprocess.py"),
+        code="preprocess.py",
         processor = sklearn_processor,
         inputs=processing_inputs,
         outputs=processing_outputs,
@@ -198,13 +200,8 @@ def get_pipeline(
   
     # training step for generating model artifacts
     model_path = f"s3://{sagemaker_session.default_bucket()}/model"
-
-    training_input_path  = f"s3://{sagemaker_session.default_bucket()}/data/train/train.csv"
-    validation_input_path  = f"s3://{sagemaker_session.default_bucket()}/data/validation/validation.csv"
-    test_input_path = f"s3://{sagemaker_session.default_bucket()}/data/test/test.csv"
-  
-      
-    train_est = HuggingFace(entry_point=os.path.join(BASE_DIR, "train.py"),
+        
+    train_est = HuggingFace(entry_point= "train.py",
                             instance_type=training_instance_type,
                             instance_count=1,
                             role=role,
@@ -255,7 +252,7 @@ def get_pipeline(
     evaluation_step = ProcessingStep(
         name="EvaluateModel",
         processor=evaluation_processor,
-        code=os.path.join(BASE_DIR, "evaluate.py"),
+        code="evaluate.py",
         inputs=[
             ProcessingInput(
                 source=training_step.properties.ModelArtifacts.S3ModelArtifacts,
