@@ -32,9 +32,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     base_dir = "/opt/ml/processing"
-    pathlib.Path(f"{base_dir}/input").mkdir(parents=True, exist_ok=True)
     
-
     logger.info("Downloading data from bucket: %s, key: %s", bucket, key)
     fn = f"{base_dir}/input/dataset.csv"
     
