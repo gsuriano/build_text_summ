@@ -249,7 +249,14 @@ def get_pipeline(
     }
 )
 
+    EVALUATION_SCRIPT_LOCATION = os.path.join(BASE_DIR, "evaluate.py")
 
+    processing_code = sagemaker_session.upload_data(
+        EVALUATION_SCRIPT_LOCATION,
+        bucket=sagemaker_session.default_bucket(),
+        key_prefix="code/evaluating",
+    )
+  
     # processing step for evaluation
     evaluation_processor = SKLearnProcessor(
         framework_version="0.23-1",
@@ -265,28 +272,42 @@ def get_pipeline(
         output_name="metrics",
         path="evaluation.json",
     )
-    
+
+    evaluation_inputs=[
+        ProcessingInput(
+            source=training_step.properties.ModelArtifacts.S3ModelArtifacts,
+            destination="/opt/ml/processing/input/model",
+        ),
+        ProcessingInput(
+            source=f"s3://{sagemaker_session.default_bucket()}/data/test.csv",
+            destination="/opt/ml/data/test",
+        ),
+    ],
+  
+    evaluation_outputs=[
+        ProcessingOutput(
+            output_name="metrics", s3_upload_mode="EndOfJob", source="/opt/ml/processing/output/metrics/"
+        ),
+    ]
+
     evaluation_step = ProcessingStep(
-        name="EvaluateModel",
-        processor=evaluation_processor,
-        code="./evaluate.py",
-        inputs=[
-            ProcessingInput(
-                source=training_step.properties.ModelArtifacts.S3ModelArtifacts,
-                destination="/opt/ml/processing/input/model",
-            ),
-            ProcessingInput(
-                source=f"s3://{sagemaker_session.default_bucket()}/data/test.csv",
-                destination="/opt/ml/data/test",
-            ),
-        ],
-        outputs=[
-            ProcessingOutput(
-                output_name="metrics", s3_upload_mode="EndOfJob", source="/opt/ml/processing/output/metrics/"
-            ),
-        ],
+        state_id = "toevaluate",    
+        job_name = f"{base_job_prefix}/evaluating",
+        #code="/opt/ml/code/processing/preprocessing.py",
+        processor = evaluation_processor,
+        inputs=evaluation_inputs,
+        outputs=processing_outputs,
+        container_entrypoint=["python3", "/opt/ml/code/evaluating/evaluate.py"],
         property_files=[evaluation_report],
     )
+    
+    # evaluation_step = ProcessingStep(
+    #     name="EvaluateModel",
+    #     processor=evaluation_processor,
+    #     code="./evaluate.py",
+        
+    #     property_files=[evaluation_report],
+    # )
 
     # register model step that will be conditionally executed
     model_metrics = ModelMetrics(
