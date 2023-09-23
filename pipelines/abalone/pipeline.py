@@ -205,7 +205,6 @@ def get_pipeline(
     ]
   
     step_process = ProcessingStep(
-        name="PreprocessData",
         state_id = "toprocess",
         job_name = f"{base_job_prefix}/processing",
         #code="/opt/ml/code/processing/preprocessing.py",
