@@ -41,7 +41,6 @@ from sagemaker.workflow.parameters import (
 from sagemaker.workflow.pipeline import Pipeline
 from sagemaker.workflow.properties import PropertyFile
 from sagemaker.workflow.steps import (
-    ProcessingStep,
     TrainingStep,
     CreateModelStep
 )
@@ -51,6 +50,9 @@ from sagemaker.model import Model
 from sagemaker.workflow.pipeline_context import PipelineSession
 
 from sagemaker.huggingface import HuggingFace
+
+from stepfunctions.steps import ProcessingStep
+
 import time
 
 
