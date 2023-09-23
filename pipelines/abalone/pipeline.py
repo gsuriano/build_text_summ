@@ -301,7 +301,7 @@ def get_pipeline(
         #code="/opt/ml/code/processing/preprocessing.py",
         processor = evaluation_processor,
         inputs=evaluation_inputs,
-        outputs=processing_outputs,
+        outputs=evaluation_outputs,
         container_entrypoint=["python3", "/opt/ml/code/evaluating/evaluate.py"],
         # property_files=[evaluation_report],
     )
