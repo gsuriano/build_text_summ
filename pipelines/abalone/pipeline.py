@@ -239,11 +239,11 @@ def get_pipeline(
               content_type="text/csv",
           ),
           "validation": TrainingInput(
-              s3_data=step_process.properties.ProcessingOutputConfig.Outputs["validation"].S3Output.S3Uri,
+              s3_data=f"s3://{sagemaker_session.default_bucket()}/data/validation.csv",
               content_type="text/csv",
           ),
           "test": TrainingInput(
-              s3_data=step_process.properties.ProcessingOutputConfig.Outputs["test"].S3Output.S3Uri,
+              s3_data=f"s3://{sagemaker_session.default_bucket()}/data/test.csv",
               content_type="text/csv",
           ),
     }
