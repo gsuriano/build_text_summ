@@ -163,7 +163,7 @@ def get_pipeline(
         name="ModelApprovalStatus", default_value="PendingManualApproval"
     )
 
-    PREPROCESSING_SCRIPT_LOCATION = "./preprocess.py"
+    PREPROCESSING_SCRIPT_LOCATION = "preprocess.py"
 
     processing_code = sagemaker_session.upload_data(
         PREPROCESSING_SCRIPT_LOCATION,
