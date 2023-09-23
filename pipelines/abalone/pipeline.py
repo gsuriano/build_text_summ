@@ -234,7 +234,8 @@ def get_pipeline(
       estimator=train_est,
       inputs={
           "train": TrainingInput(
-              s3_data=step_process.properties.ProcessingOutputConfig.Outputs["train"].S3Output.S3Uri,
+              #s3_data=step_process.properties.ProcessingOutputConfig.Outputs["train"].S3Output.S3Uri,
+              s3_data = f"s3://{sagemaker_session.default_bucket()}/data/train.csv",
               content_type="text/csv",
           ),
           "validation": TrainingInput(
