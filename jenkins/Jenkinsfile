@@ -13,7 +13,7 @@ pipeline {
       bat '''pip3 install --upgrade --force-reinstall --target $HOME/.local/$SAGEMAKER_PROJECT_NAME_ID . "awscli>1.20.30"  "sagemaker>=2.140.0" "transformers==4.26.1" "datasets[s3]==2.10.1"  
       git clone https://github.com/gsuriano/THExt-1.1.git
       python spacy download en_core_web_lg
-      pip3 install -e .[dev]
+      pip3 install -e .[dev] 
       git clone https://github.com/aws/aws-step-functions-data-science-sdk-python.git
       pip3 install aws-step-functions-data-science-sdk-python'''
       }
