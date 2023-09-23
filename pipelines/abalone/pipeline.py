@@ -50,7 +50,7 @@ from sagemaker.model import Model
 from sagemaker.workflow.pipeline_context import PipelineSession
 
 from sagemaker.huggingface import HuggingFace
-
+import stepfunctions
 from stepfunctions.steps import ProcessingStep
 
 import time
