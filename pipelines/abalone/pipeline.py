@@ -150,7 +150,7 @@ def get_pipeline(
         an instance of a pipeline
     """
 
-    print(f"DEBUG {BASE_DIR}")
+    
     sagemaker_session = get_session(region, default_bucket)
     if role is None:
         role = sagemaker.session.get_execution_role(sagemaker_session)
@@ -162,8 +162,15 @@ def get_pipeline(
     model_approval_status = ParameterString(
         name="ModelApprovalStatus", default_value="PendingManualApproval"
     )
-  
 
+    PREPROCESSING_SCRIPT_LOCATION = "preprocessing.py"
+
+    processing_code = sagemaker_session.upload_data(
+        PREPROCESSING_SCRIPT_LOCATION,
+        bucket=sagemaker_session.default_bucket(),
+        key_prefix="code/processing",
+    )
+  
     # processing step for feature engineering
     sklearn_processor = SKLearnProcessor(
         framework_version="0.23-1",
@@ -183,6 +190,11 @@ def get_pipeline(
 
     processing_inputs=[
       ProcessingInput(source=input_data, destination="/opt/ml/processing/input"),
+      ProcessingInput(
+        source=processing_code,
+        destination="/opt/ml/code/processing",
+        input_name="code",
+    ),
     ]
     processing_outputs=[
             ProcessingOutput(destination=f"s3://{sagemaker_session.default_bucket()}/data/train.csv", source="/opt/ml/processing/train"),
@@ -196,6 +208,7 @@ def get_pipeline(
         processor = sklearn_processor,
         inputs=processing_inputs,
         outputs=processing_outputs,
+        container_entrypoint=["python3", "/opt/ml/code/processing/preprocessing.py"]
     )
   
     # training step for generating model artifacts
