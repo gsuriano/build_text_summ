@@ -291,7 +291,8 @@ def get_pipeline(
   
     evaluation_outputs=[
         ProcessingOutput(
-            output_name="metrics", s3_upload_mode="EndOfJob", source="/opt/ml/processing/output/metrics/"
+            # output_name="metrics", s3_upload_mode="EndOfJob", source="/opt/ml/processing/output/metrics/"
+            destination=f"s3://{sagemaker_session.default_bucket()}/output/metrics.json", source="/opt/ml/processing/output/metrics/"
         ),
     ]
 
@@ -374,7 +375,7 @@ def get_pipeline(
         right=6.0,
     )
     step_cond = ConditionStep(
-        name="CheckMSEAbaloneEvaluation",
+        name="CheckMSEEvaluation",
         conditions=[cond_lte],
         if_steps=[register_step,create_step],
         else_steps=[],
