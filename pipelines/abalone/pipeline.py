@@ -298,7 +298,7 @@ def get_pipeline(
         inputs=evaluation_inputs,
         outputs=processing_outputs,
         container_entrypoint=["python3", "/opt/ml/code/evaluating/evaluate.py"],
-        property_files=[evaluation_report],
+        # property_files=[evaluation_report],
     )
     
     # evaluation_step = ProcessingStep(
@@ -310,12 +310,12 @@ def get_pipeline(
     # )
 
     # register model step that will be conditionally executed
-    model_metrics = ModelMetrics(
-        model_statistics=MetricsSource(
-            s3_uri=evaluation_step.properties.ProcessingOutputConfig.Outputs["metrics"].S3Output.S3Uri,
-            content_type="application/json"
-        )
-    )
+    # model_metrics = ModelMetrics(
+    #     model_statistics=MetricsSource(
+    #         s3_uri=evaluation_step.properties.ProcessingOutputConfig.Outputs["metrics"].S3Output.S3Uri,
+    #         content_type="application/json"
+    #     )
+    # )
 
     inference_image_uri = "763104351884.dkr.ecr.us-east-1.amazonaws.com/huggingface-pytorch-inference:1.13.1-transformers4.26.0-cpu-py39-ubuntu20.04"
 
@@ -332,8 +332,7 @@ def get_pipeline(
         response_types=["application/jsonlines"],
         inference_instances=[processing_instance_type],
         transform_instances=["ml.m4.xlarge"],
-        approval_status=model_approval_status,
-        model_metrics=model_metrics,
+        approval_status=model_approval_status
     )
     
     timestamp = int(time.time())
