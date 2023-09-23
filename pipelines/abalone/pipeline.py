@@ -276,7 +276,7 @@ def get_pipeline(
                 destination="/opt/ml/processing/input/model",
             ),
             ProcessingInput(
-                source=step_process.properties.ProcessingOutputConfig.Outputs["test"].S3Output.S3Uri,
+                source=f"s3://{sagemaker_session.default_bucket()}/data/test.csv",
                 destination="/opt/ml/data/test",
             ),
         ],
