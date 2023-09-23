@@ -172,9 +172,15 @@ def get_pipeline(
         role=role,
     )
 
+    raw_input_data_s3_uri = f"s3://{sagemaker_session.default_bucket()}/data/dataset.csv"
+    
+    input_data = ParameterString(
+        name="InputData",
+        default_value=raw_input_data_s3_uri,
+    )
 
     processing_inputs=[
-      ProcessingInput(source=f"s3://{sagemaker_session.default_bucket()}/data/dataset.csv", destination="/opt/ml/processing/input"),
+      ProcessingInput(source=input_data, destination="/opt/ml/processing/input"),
     ]
     processing_outputs=[
             ProcessingOutput(destination=f"s3://{sagemaker_session.default_bucket()}/data/train.csv", source="/opt/ml/processing/train"),
