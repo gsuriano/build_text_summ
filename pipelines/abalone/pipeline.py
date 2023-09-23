@@ -204,7 +204,7 @@ def get_pipeline(
   
     step_process = ProcessingStep(
         name="PreprocessData",
-        code="./preprocess.py",
+        #code="./preprocess.py",
         processor = sklearn_processor,
         inputs=processing_inputs,
         outputs=processing_outputs,
