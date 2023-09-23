@@ -192,7 +192,7 @@ def get_pipeline(
   
     step_process = ProcessingStep(
         name="PreprocessData",
-        code="preprocess.py",
+        code="./preprocess.py",
         processor = sklearn_processor,
         inputs=processing_inputs,
         outputs=processing_outputs,
@@ -201,7 +201,7 @@ def get_pipeline(
     # training step for generating model artifacts
     model_path = f"s3://{sagemaker_session.default_bucket()}/model"
         
-    train_est = HuggingFace(entry_point= "train.py",
+    train_est = HuggingFace(entry_point= "./train.py",
                             instance_type=training_instance_type,
                             instance_count=1,
                             role=role,
@@ -252,7 +252,7 @@ def get_pipeline(
     evaluation_step = ProcessingStep(
         name="EvaluateModel",
         processor=evaluation_processor,
-        code="evaluate.py",
+        code="./evaluate.py",
         inputs=[
             ProcessingInput(
                 source=training_step.properties.ModelArtifacts.S3ModelArtifacts,
