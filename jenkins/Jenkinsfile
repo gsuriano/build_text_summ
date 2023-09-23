@@ -10,10 +10,11 @@ pipeline {
   stages { stepfunctions
     stage('Build and Install') {
       steps {
-      bat '''pip3 install --upgrade --force-reinstall --target $HOME/.local/$SAGEMAKER_PROJECT_NAME_ID . "awscli>1.20.30"  "sagemaker>=2.140.0" "transformers==4.26.1" "datasets[s3]==2.10.1" stepfunctions 
+      bat '''pip3 install --upgrade --force-reinstall --target $HOME/.local/$SAGEMAKER_PROJECT_NAME_ID . "awscli>1.20.30"  "sagemaker>=2.140.0" "transformers==4.26.1" "datasets[s3]==2.10.1"  
       git clone https://github.com/gsuriano/THExt-1.1.git
       python spacy download en_core_web_lg
-      pip3 install -e .[dev]'''
+      pip3 install -e .[dev]
+      pip install stepfunctions'''
       }
     }
     stage('Update and Run Sagemaker Pipeline') {
