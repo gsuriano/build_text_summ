@@ -204,11 +204,11 @@ def get_pipeline(
   
     step_process = ProcessingStep(
         name="PreprocessData",
-        #code="./preprocess.py",
+        code="/opt/ml/code/processing/preprocessing.py",
         processor = sklearn_processor,
         inputs=processing_inputs,
         outputs=processing_outputs,
-        container_entrypoint=["python3", "/opt/ml/code/processing/preprocessing.py"]
+        #container_entrypoint=["python3", "/opt/ml/code/processing/preprocessing.py"]
     )
   
     # training step for generating model artifacts
