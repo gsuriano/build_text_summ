@@ -66,7 +66,7 @@ Utility modules for getting pipeline definition jsons and running pipelines :
 ```
 ### Organization of the pipeline
 This project presents a comprehensive pipeline for extractive text summarization using the Thext architecture. The pipeline includes preprocessing, training, evaluation, and a condition step for model registration and deployment.
-![Pipeline Diagram](/images/pipeline-full.png)
+![Pipeline Diagram](/img/pipeline-full.png)
 
 #### 1. Preprocessing Step
 
