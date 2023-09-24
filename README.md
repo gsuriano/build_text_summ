@@ -71,11 +71,11 @@ This project presents a comprehensive pipeline for extractive text summarization
 
 #### 1. Preprocessing Step
 
-In this step, we prepare the dataset for training, validation, and testing:
+In this step, we prepare the dataset for training, validation, and testing with:
 
 - **Article Sentences**: The sentences from the articles are extracted and used as input data.
 - **Associated Context**: The context of the articles is collected to provide additional information for the model.
-- **Rouge Scores**: Relative Rouge scores between the extracted sentences and the expected summary are computed to serve as labels.
+- **Rouge Scores**: Relative Rouge scores between the extracted sentences and the target summary are computed to serve as labels.
 
 The dataset is then split into three sets: training, validation, and test.
 
@@ -91,11 +91,7 @@ After training, the model is evaluated using a test set to assess its performanc
 
 In the condition step, we assess the results of the newly fine-tuned model. If the model achieves better performance compared to a predefined baseline or previous models, it is registered in the model registry. The model registry keeps track of model versions and serves as a repository for deploying models.
 
-### Usage
-
-Detailed instructions for using the pipeline, including commands and configurations, can be found in the project's documentation.
-
-### Model Deployment
+#### 5. Model Deployment
 
 Once a model is registered in the model registry and meets the desired performance criteria, it can be deployed as an endpoint in AWS SageMaker. Deploying the model allows it to be accessible for automated or on-demand summarization tasks.
 
