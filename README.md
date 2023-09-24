@@ -50,7 +50,8 @@ Your pipeline artifacts, which includes a pipeline module defining the required 
 |   |   |-- evaluate.py
 |   |   |-- __init__.py
 |   |   |-- pipeline.py
-|   |   `-- preprocess.py
+|   |   |-- preprocess.py
+|   |   `-- train.py
 
 ```
 <br/><br/>
