@@ -54,7 +54,7 @@ Your pipeline artifacts, which includes a pipeline module defining the required 
 
 ```
 <br/><br/>
-Utility modules for getting pipeline definition jsons and running pipelines (you do not typically need to modify these):
+Utility modules for getting pipeline definition jsons and running pipelines :
 
 ```
 |-- pipelines
@@ -64,21 +64,37 @@ Utility modules for getting pipeline definition jsons and running pipelines (you
 |   |-- _utils.py
 |   `-- __version__.py
 ```
-<br/><br/>
-Python package artifacts:
-```
-|-- setup.cfg
-|-- setup.py
-```
-<br/><br/>
-A stubbed testing module for testing your pipeline as you develop:
-```
-|-- tests
-|   `-- test_pipelines.py
-```
-<br/><br/>
-The `tox` testing framework configuration:
-```
-`-- tox.ini
-```
+### Organization of the pipeline
+This project presents a comprehensive pipeline for extractive text summarization using the Thext architecture. The pipeline includes preprocessing, training, evaluation, and a condition step for model registration and deployment.
+![Pipeline Diagram](/images/pipeline-full.png)
+
+#### 1. Preprocessing Step
+
+In this step, we prepare the dataset for training, validation, and testing:
+
+- **Article Sentences**: The sentences from the articles are extracted and used as input data.
+- **Associated Context**: The context of the articles is collected to provide additional information for the model.
+- **Rouge Scores**: Relative Rouge scores between the extracted sentences and the expected summary are computed to serve as labels.
+
+The dataset is then split into three sets: training, validation, and test.
+
+#### 2. Training Step
+
+In the training step, we use the Hugging Face Estimator to fine-tune the Thext model with the new dataset. The goal is to adapt the model's embeddings to the new domain of application. The Thext model is initialized with pretrained BERT weights and includes a fully connected layer for summarization.
+
+#### 3. Evaluation Step
+
+After training, the model is evaluated using a test set to assess its performance. We use standard extractive summarization metrics such as ROUGE and BLEU to measure how well the model extracts sentences that match the expected summary.
+
+#### 4. Condition Step
+
+In the condition step, we assess the results of the newly fine-tuned model. If the model achieves better performance compared to a predefined baseline or previous models, it is registered in the model registry. The model registry keeps track of model versions and serves as a repository for deploying models.
+
+### Usage
+
+Detailed instructions for using the pipeline, including commands and configurations, can be found in the project's documentation.
+
+### Model Deployment
+
+Once a model is registered in the model registry and meets the desired performance criteria, it can be deployed as an endpoint in AWS SageMaker. Deploying the model allows it to be accessible for automated or on-demand summarization tasks.
 
