@@ -68,9 +68,9 @@ def main():  # pragma: no cover
 
     try:
         pipeline = get_pipeline_driver(args.module_name, args.kwargs)
-        # print("###### Creating/updating a SageMaker Pipeline with the following definition:")
-        # parsed = json.loads(pipeline.definition())
-        # print(json.dumps(parsed, indent=2, sort_keys=True))
+        print("###### Creating/updating a SageMaker Pipeline with the following definition:")
+        parsed = json.loads(pipeline.definition())
+        print(json.dumps(parsed, indent=2, sort_keys=True))
 
         all_tags = get_pipeline_custom_tags(args.module_name, args.kwargs, tags)
 
