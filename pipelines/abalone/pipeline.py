@@ -1,13 +1,4 @@
-"""Example workflow pipeline script for abalone pipeline.
 
-                                               . -ModelStep
-                                              .
-    Process-> Train -> Evaluate -> Condition .
-                                              .
-                                               . -(stop)
-
-Implements a get_pipeline(**kwargs) method.
-"""
 import os
 
 import boto3
@@ -135,13 +126,13 @@ def get_pipeline(
     sagemaker_project_name=None,
     role=None,
     default_bucket=None,
-    model_package_group_name="AbalonePackageGroup",
-    pipeline_name="AbalonePipeline",
-    base_job_prefix="Abalone",
+    model_package_group_name="PackageGroup",
+    pipeline_name="Pipeline",
+    base_job_prefix="",
     processing_instance_type="ml.m5.xlarge",
     training_instance_type="ml.m5.xlarge",
 ):
-    """Gets a SageMaker ML Pipeline instance working with on abalone data.
+    """Gets a SageMaker ML Pipeline instance working with on  data.
 
     Args:
         region: AWS region to create and run the pipeline.
@@ -207,7 +198,6 @@ def get_pipeline(
     step_process = ProcessingStep(
         state_id = "toprocess",
         job_name = f"{base_job_prefix}/processing",
-        #code="/opt/ml/code/processing/preprocessing.py",
         processor = sklearn_processor,
         inputs=processing_inputs,
         outputs=processing_outputs,
@@ -234,7 +224,6 @@ def get_pipeline(
       estimator=train_est,
       inputs={
           "train": TrainingInput(
-              #s3_data=step_process.properties.ProcessingOutputConfig.Outputs["train"].S3Output.S3Uri,
               s3_data = f"s3://{sagemaker_session.default_bucket()}/data/train.csv",
               content_type="text/csv",
           ),
@@ -291,7 +280,6 @@ def get_pipeline(
   
     evaluation_outputs=[
         ProcessingOutput(
-            # output_name="metrics", s3_upload_mode="EndOfJob", source="/opt/ml/processing/output/metrics/"
             destination=f"s3://{sagemaker_session.default_bucket()}/output/metrics.json", source="/opt/ml/processing/output/metrics/"
         ),
     ]
@@ -299,38 +287,19 @@ def get_pipeline(
     evaluation_step = ProcessingStep(
         state_id = "toevaluate",    
         job_name = f"{base_job_prefix}/evaluating",
-        #code="/opt/ml/code/processing/preprocessing.py",
         processor = evaluation_processor,
         inputs=evaluation_inputs,
         outputs=evaluation_outputs,
         container_entrypoint=["python3", "/opt/ml/code/evaluating/evaluate.py"],
-        # property_files=[evaluation_report],
+        container_arguments=["--train-test-split-ratio", "0.2"],
     )
     
-    # evaluation_step = ProcessingStep(
-    #     name="EvaluateModel",
-    #     processor=evaluation_processor,
-    #     code="./evaluate.py",
-        
-    #     property_files=[evaluation_report],
-    # )
-
-    # register model step that will be conditionally executed
-    # model_metrics = ModelMetrics(
-    #     model_statistics=MetricsSource(
-    #         s3_uri=evaluation_step.properties.ProcessingOutputConfig.Outputs["metrics"].S3Output.S3Uri,
-    #         content_type="application/json"
-    #     )
-    # )
-
     inference_image_uri = "763104351884.dkr.ecr.us-east-1.amazonaws.com/huggingface-pytorch-inference:1.13.1-transformers4.26.0-cpu-py39-ubuntu20.04"
 
     model_approval_status = ParameterString(name="ModelApprovalStatus", default_value="PendingManualApproval")
     
     register_step = RegisterModel(
         name="RegisterModel",
-        #    entry_point='inference.py', # Adds a Repack Step:  https://github.com/aws/sagemaker-python-sdk/blob/01c6ee3a9ec1831e935e86df58cf70bc92ed1bbe/src/sagemaker/workflow/_utils.py#L44
-        #    source_dir='src',
         estimator=train_est,
         image_uri=inference_image_uri,  # we have to specify, by default it's using training image
         model_data=training_step.properties.ModelArtifacts.S3ModelArtifacts,
